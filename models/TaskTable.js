@@ -51,6 +51,13 @@ Task.init(
     sequelize,
     tableName: "task",
     timestamps: false,
+    hooks: {
+      beforeCreate: async (task) => {
+        task.title = task.title.toLowerCase().trim();
+        task.description = task.description.toLowerCase().trim();
+        task.status = task.status.toLowerCase();
+      },
+    },
   }
 );
 
