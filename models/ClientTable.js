@@ -1,6 +1,7 @@
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const bcrypt = require("bcrypt");
+const User = require("./UserTable");
 
 class Client extends Model {}
 
@@ -17,16 +18,16 @@ Client.init(
       allowNull: false,
     },
     email: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(100),
       allowNull: false,
       unique: true,
     },
     document: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(15),
       allowNull: false,
     },
     phone: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(15),
     },
     password: {
       type: DataTypes.STRING(255),
@@ -41,19 +42,25 @@ Client.init(
       beforeCreate: async (client) => {
         const salt = await bcrypt.genSalt(10);
         client.password = await bcrypt.hash(client.password, salt);
-        client.email = client.email.toLowerCase();
+        client.name = client.name.toLowerCase().trim();
+        client.email = client.email.toLowerCase().trim();
       },
       beforeUpdate: async (client) => {
         if (client.changed("password")) {
           const salt = await bcrypt.genSalt(10);
           client.password = await bcrypt.hash(client.password, salt);
         }
+        if (client.changed("name")) {
+          client.name = client.name.toLowerCase().trim();
+        }
         if (client.changed("email")) {
-          client.email = client.email.toLowerCase();
+          client.email = client.email.toLowerCase().trim();
         }
       },
     },
   }
 );
+
+Client.hasMany(User, { foreignKey: "client_id" });
 
 module.exports = Client;
