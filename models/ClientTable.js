@@ -2,6 +2,7 @@ const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const bcrypt = require("bcrypt");
 const User = require("./UserTable");
+const Task = require("./TaskTable");
 
 class Client extends Model {}
 
@@ -62,5 +63,6 @@ Client.init(
 );
 
 Client.hasMany(User, { foreignKey: "client_id" });
+Client.hasMany(Task, { foreignKey: "client_id" });
 
 module.exports = Client;
