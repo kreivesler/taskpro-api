@@ -1,8 +1,7 @@
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const bcrypt = require("bcrypt");
-const User = require("./UserTable");
-const Task = require("./TaskTable");
+const { encrypt } = require("../utils/CryptoDocument");
 
 class Client extends Model {}
 
@@ -40,17 +39,18 @@ Client.init(
     tableName: "client",
     timestamps: false,
     hooks: {
+      //Before create e update Client crypto document (cpf or cnpj) and password
+      //Normalize email for eliminated duplicates
       beforeCreate: async (client) => {
         const salt = await bcrypt.genSalt(10);
-        client.document = await bcrypt.hash(client.document, salt);
+        client.document = await encrypt(client.document);
         client.password = await bcrypt.hash(client.password, salt);
         client.name = client.name.toLowerCase().trim();
         client.email = client.email.toLowerCase().trim();
       },
       beforeUpdate: async (client) => {
         if (client.changed("document")) {
-          const salt = await bcrypt.genSalt(10);
-          client.document = await bcrypt.hash(client.document, salt);
+          client.document = await encrypt(client.document);
         }
         if (client.changed("password")) {
           const salt = await bcrypt.genSalt(10);

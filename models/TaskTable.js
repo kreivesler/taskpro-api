@@ -52,6 +52,7 @@ Task.init(
     tableName: "task",
     timestamps: false,
     hooks: {
+      //hooks using before values insert in table and normalized during CREATE data
       beforeCreate: async (task) => {
         task.title = task.title.toLowerCase().trim();
         task.description = task.description.toLowerCase().trim();
