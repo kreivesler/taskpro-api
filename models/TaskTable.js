@@ -62,4 +62,10 @@ Task.init(
   }
 );
 
+// Associate tables with the model
+Task.associate = (models) => {
+  Task.belongsTo(models.Client, { foreignKey: "client_id" });
+  Task.belongsTo(models.User, { foreignKey: "user_id" });
+};
+
 module.exports = Task;

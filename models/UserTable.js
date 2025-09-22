@@ -64,4 +64,9 @@ User.init(
   }
 );
 
+// Associate tables with the model
+User.associate = (models) => {
+  User.hasMany(models.Task, { foreignKey: "user_id" });
+};
+
 module.exports = User;

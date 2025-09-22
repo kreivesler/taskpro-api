@@ -67,4 +67,10 @@ Client.init(
   }
 );
 
+// Associate tables with the model
+Client.associate = (models) => {
+  Client.hasMany(models.User, { foreignKey: "client_id" });
+  Client.hasMany(models.Task, { foreignKey: "client_id" });
+};
+
 module.exports = Client;
