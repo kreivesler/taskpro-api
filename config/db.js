@@ -1,4 +1,3 @@
-// Exemplo de como a conexão poderia ser envolta em uma função
 const { Sequelize } = require("sequelize");
 const sequelize = new Sequelize({
   database: process.env.DBNAME,
