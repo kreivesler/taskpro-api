@@ -24,7 +24,7 @@ Client.init(
       unique: true,
     },
     document: {
-      type: DataTypes.STRING(15),
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
     phone: {
@@ -42,11 +42,16 @@ Client.init(
     hooks: {
       beforeCreate: async (client) => {
         const salt = await bcrypt.genSalt(10);
+        client.document = await bcrypt.hash(client.document, salt);
         client.password = await bcrypt.hash(client.password, salt);
         client.name = client.name.toLowerCase().trim();
         client.email = client.email.toLowerCase().trim();
       },
       beforeUpdate: async (client) => {
+        if (client.changed("document")) {
+          const salt = await bcrypt.genSalt(10);
+          client.document = await bcrypt.hash(client.document, salt);
+        }
         if (client.changed("password")) {
           const salt = await bcrypt.genSalt(10);
           client.password = await bcrypt.hash(client.password, salt);
