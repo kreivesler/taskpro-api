@@ -41,7 +41,7 @@ User.init(
     tableName: "user",
     timestamps: false,
     hooks: {
-      //Before create e update Client crypto password
+      //Before create e update User crypto password
       //Normalize email for eliminated duplicates
       beforeCreate: async (user) => {
         const salt = await bcrypt.genSalt(10);
