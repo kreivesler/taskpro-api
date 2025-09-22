@@ -61,12 +61,4 @@ Task.init(
   }
 );
 
-Task.belongsTo(User, {
-  foreignKey: "user_id",
-});
-
-Task.belongsTo(Client, {
-  foreignKey: "client_id",
-});
-
 module.exports = Task;

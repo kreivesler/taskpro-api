@@ -67,7 +67,4 @@ Client.init(
   }
 );
 
-Client.hasMany(User, { foreignKey: "client_id" });
-Client.hasMany(Task, { foreignKey: "client_id" });
-
 module.exports = Client;

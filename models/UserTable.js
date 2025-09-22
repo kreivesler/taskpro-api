@@ -63,6 +63,4 @@ User.init(
   }
 );
 
-User.hasMany(Task, { foreignKey: "user_id" });
-
 module.exports = User;
