@@ -88,8 +88,14 @@ module.exports = clientController = {
       }
 
       const users = await client.getUsers();
+      const allUsers = users.map((u) => {
+        return {
+          id: u.id,
+          name: u.name,
+        };
+      });
 
-      return res.status(200).json(users);
+      return res.status(200).json(allUsers);
     } catch (error) {
       console.log("internal server error", error.message);
       return res.status(500).json("Internal server error.");
