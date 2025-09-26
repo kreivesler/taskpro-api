@@ -1,6 +1,6 @@
 const { decrypt } = require("../utils/CryptoDocument");
 const Client = require("../models/ClientTable");
-const { redisClient } = require("../redis/client");
+const { redisClient } = require("../redis/clientStore");
 
 module.exports = clientController = {
   newClient: async (req, res) => {
@@ -17,20 +17,22 @@ module.exports = clientController = {
         });
       }
 
-      const client = await Client.create(req.body);
+      const clientStore = await Client.create(req.body);
 
-      if (!client) {
-        return res.status(500).json({ message: "Error at create new client." });
+      if (!clientStore) {
+        return res
+          .status(500)
+          .json({ message: "Error at create new clientStore." });
       }
 
       await redisClient.set(
-        `clientInfo${client.id}`,
+        `clientInfo${clientStore.id}`,
         JSON.stringify({
-          id: client.id,
-          name: client.name,
-          email: client.email,
-          document: decrypt(client.document),
-          phone: client.phone,
+          id: clientStore.id,
+          name: clientStore.name,
+          email: clientStore.email,
+          document: decrypt(clientStore.document),
+          phone: clientStore.phone,
         })
       );
       return res.status(201).json({ message: "Client created successfully!" });
@@ -41,24 +43,22 @@ module.exports = clientController = {
   },
   updateClient: async (req, res) => {
     try {
-      const client = await Client.findByPk(parseInt(req.params.id));
-      if (!client) {
+      const id = parseInt(req.params.id);
+      const clientStore = await Client.findByPk(id);
+      if (!clientStore) {
         return res.status(404).json({ message: "Client not found." });
       }
-      await client.update(req.body);
-      const clientStore = await redisClient.get(
-        `clientInfo${parseInt(req.params.id)}`
-      );
-
-      const clientObj = JSON.parse(clientStore);
-      clientObj.name = client.name;
-      clientObj.email = client.email;
-      clientObj.document = decrypt(client.document);
-      clientObj.phone = client.phone;
+      await clientStore.update(req.body);
 
       await redisClient.set(
-        `clientInfo${client.id}`,
-        JSON.stringify(clientObj)
+        `clientInfo${clientStore.id}`,
+        JSON.stringify({
+          id: clientStore.id,
+          name: clientStore.name,
+          email: clientStore.email,
+          document: decrypt(clientStore.document),
+          phone: clientStore.phone,
+        })
       );
 
       return res.status(200).json({ message: "Client updated successfully!" });
@@ -69,14 +69,13 @@ module.exports = clientController = {
   },
   getClientById: async (req, res) => {
     try {
-      let client;
+      const id = parseInt(req.params.id);
+      let clientStore;
 
-      const clientStore = await redisClient.get(
-        `clientInfo${parseInt(req.params.id)}`
-      );
+      const cachedClient = await redisClient.get(`clientInfo${id}`);
 
-      if (clientStore) {
-        client = JSON.parse(clientStore);
+      if (cachedClient) {
+        clientStore = JSON.parse(cachedClient);
       } else {
         const clientDb = await Client.findByPk(parseInt(req.params.id));
 
@@ -86,7 +85,7 @@ module.exports = clientController = {
             .json({ message: "Client not found or not exist." });
         }
 
-        client = {
+        clientStore = {
           id: clientDb.id,
           name: clientDb.name,
           email: clientDb.email,
@@ -95,12 +94,12 @@ module.exports = clientController = {
         };
 
         await redisClient.set(
-          `clientInfo:${client.id}`,
-          JSON.stringify(client)
+          `clientInfo:${clientStore.id}`,
+          JSON.stringify(clientStore)
         );
       }
 
-      return res.status(200).json(client);
+      return res.status(200).json(clientStore);
     } catch (error) {
       console.log("internal server error", error.message);
       return res.status(500).json("Internal server error.");
@@ -108,16 +107,15 @@ module.exports = clientController = {
   },
   getAllTask: async (req, res) => {
     try {
+      const id = parseInt(req.params.id);
       let clientTasks;
 
-      const taskStore = await redisClient.get(
-        `clientTasks${parseInt(req.params.id)}`
-      );
+      const cachedTasks = await redisClient.get(`clientTasks${id}`);
 
-      if (taskStore) {
-        clientTasks = JSON.parse(taskStore);
+      if (cachedTasks) {
+        clientTasks = JSON.parse(cachedTasks);
       } else {
-        const clientDb = await Client.findByPk(parseInt(req.params.id));
+        const clientDb = await Client.findByPk(id);
 
         if (!clientDb) {
           return res
@@ -128,7 +126,7 @@ module.exports = clientController = {
         clientTasks = await clientDb.getTasks();
 
         await redisClient.set(
-          `clientTasks${parseInt(clientDb.id)}`,
+          `clientTasks${clientDb.id}`,
           JSON.stringify(clientTasks)
         );
       }
@@ -141,16 +139,15 @@ module.exports = clientController = {
   },
   getUsersByClient: async (req, res) => {
     try {
+      const id = parseInt(req.params.id);
       let allUsers;
 
-      const clientUsers = await redisClient.get(
-        `clientUsers${parseInt(req.params.id)}`
-      );
+      const clientCachedUsers = await redisClient.get(`clientCachedUsers${id}`);
 
-      if (clientUsers) {
-        allUsers = JSON.parse(clientUsers);
+      if (clientCachedUsers) {
+        allUsers = JSON.parse(clientCachedUsers);
       } else {
-        const clientDb = await Client.findByPk(parseInt(req.params.id));
+        const clientDb = await Client.findByPk(id);
         if (!clientDb) {
           return res
             .status(404)
@@ -162,11 +159,12 @@ module.exports = clientController = {
           return {
             id: u.id,
             name: u.name,
+            email: u.email,
           };
         });
 
         await redisClient.set(
-          `clientUsers${parseInt(clientDb.id)}`,
+          `clientCachedUsers${parseInt(clientDb.id)}`,
           JSON.stringify(allUsers)
         );
       }
