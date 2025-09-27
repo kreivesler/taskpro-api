@@ -1,5 +1,6 @@
 const User = require("../models/UserTable");
 const { redisClient } = require("../redis/client");
+const bcrypt = require("bcrypt");
 
 module.exports = userController = {
   newUser: async (req, res) => {
@@ -35,7 +36,7 @@ module.exports = userController = {
 
       return res
         .status(201)
-        .json({ message: "New dbUser created successfully!" });
+        .json({ message: "New user created successfully!" });
     } catch (error) {
       console.log("Internal server error:", error.message);
       return res.status(500).json({ message: "Internal server error." });
@@ -68,6 +69,44 @@ module.exports = userController = {
       }
 
       return res.status(200).json(user);
+    } catch (error) {
+      console.log("Internal server error:", error.message);
+      return res.status(500).json({ message: "Internal server error." });
+    }
+  },
+  updateUserPassword: async (req, res) => {
+    try {
+      const { email, name, newPassword, password } = req.body;
+      const dbUser = await User.findOne({
+        where: { email: email, name: name },
+      });
+      if (!dbUser) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      const isEqualPassword = await bcrypt.compare(password, dbUser.password);
+
+      if (isEqualPassword === false) {
+        return res
+          .status(400)
+          .json({ message: "Your old password is incorrect. Try again." });
+      }
+
+      await dbUser.update({
+        password: newPassword,
+      });
+
+      await redisClient.set(
+        `userInfo${dbUser.id}`,
+        JSON.stringify({
+          id: dbUser.id,
+          name: dbUser.name,
+          email: dbUser.email,
+          client_id: dbUser.client_id,
+        })
+      );
+
+      return res.status(204).end();
     } catch (error) {
       console.log("Internal server error:", error.message);
       return res.status(500).json({ message: "Internal server error." });

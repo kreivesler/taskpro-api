@@ -1,6 +1,7 @@
 const { decrypt } = require("../utils/CryptoDocument");
 const Client = require("../models/ClientTable");
 const { redisClient } = require("../redis/dbClient");
+const bcrypt = require("bcrypt");
 
 module.exports = clientController = {
   newClient: async (req, res) => {
@@ -41,14 +42,24 @@ module.exports = clientController = {
       return res.status(500).json("Internal server error.");
     }
   },
-  updateClient: async (req, res) => {
+  updateClientPassword: async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const dbClient = await Client.findByPk(id);
+      const { newPassword, password, name, email } = req.body;
+      const dbClient = await Client.findOne({
+        where: { name: name, email: email },
+      });
       if (!dbClient) {
         return res.status(404).json({ message: "Client not found." });
       }
-      await dbClient.update(req.body);
+
+      const isEqualPassword = await bcrypt.compare(password, dbClient.password);
+
+      if (isEqualPassword === false) {
+        return res
+          .status(400)
+          .json({ message: "Your old password is incorrect. Try again." });
+      }
+      await dbClient.update({ password: newPassword });
 
       await redisClient.set(
         `clientInfo${dbClient.id}`,
@@ -61,7 +72,7 @@ module.exports = clientController = {
         })
       );
 
-      return res.status(200).json({ message: "Client updated successfully!" });
+      return res.status(204).end();
     } catch (error) {
       console.log("internal server error", error.message);
       return res.status(500).json("Internal server error.");
