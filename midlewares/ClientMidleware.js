@@ -79,4 +79,57 @@ module.exports = clientMidleware = {
       return res.status(500).json({ message: "Internal server error." });
     }
   },
+  validateNewClientPassword: async (req, res, next) => {
+    try {
+      const { newPassword, password, name, email } = req.body;
+      if (!PASSWORD_REGEX.test(password)) {
+        return res
+          .status(400)
+          .json(
+            responseRegexError(
+              "Weak password",
+              "password",
+              "The password most be 8 characters, include a capital letter, lowercase letters and a number and one special character."
+            )
+          );
+      }
+      if (!PASSWORD_REGEX.test(newPassword)) {
+        return res
+          .status(400)
+          .json(
+            responseRegexError(
+              "Weak password",
+              "newPassword",
+              "The new password most be 8 characters, include a capital letter, lowercase letters and a number and one special character."
+            )
+          );
+      }
+      if (!NAME_REGEX.test(name)) {
+        return res
+          .status(400)
+          .json(
+            responseRegexError(
+              "Invalid name",
+              "name",
+              "The name is invalid. Not include numbers or  special characters with @$#."
+            )
+          );
+      }
+      if (!EMAIL_REGEX.test(email)) {
+        return res
+          .status(400)
+          .json(
+            responseRegexError(
+              "Invalid email",
+              "email",
+              "Verify if the format email is correct (ex: user@exemple.com)."
+            )
+          );
+      }
+      next();
+    } catch (error) {
+      console.log("Internal server error:", error.message);
+      return res.status(500).json({ message: "Internal server error." });
+    }
+  },
 };
