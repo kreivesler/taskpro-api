@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT;
 
-const redisSecurityMiddleware = require("./midlewares/SecurityMidleware");
+const redisSecurityMiddleware = require("./midlewares/SecurityMiddleware");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 const sequelize = require("./config/db");
