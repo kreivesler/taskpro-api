@@ -56,7 +56,7 @@ module.exports = taskController = {
       } else {
         const dbTask = await Task.findByPk(taskId);
 
-        await redisClient.set(`task${dbTask.id}`, dbTask);
+        await redisClient.set(`task${dbTask.id}`, JSON.stringify(dbTask));
 
         dataTask = dbTask;
       }
