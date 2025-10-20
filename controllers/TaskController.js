@@ -74,7 +74,7 @@ module.exports = taskController = {
       const dbTask = await Task.findByPk(taskId);
 
       if (dbTask) {
-        //Como excluir o cache???
+        await redisClient.del(`task${taskId}`);
 
         dbTask.destroy();
       } else {
