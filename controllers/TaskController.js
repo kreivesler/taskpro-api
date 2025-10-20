@@ -67,4 +67,24 @@ module.exports = taskController = {
       return res.status(500).json({ message: "Internal server error." });
     }
   },
+  deleteTaskById: async (req, res) => {
+    try {
+      const taskId = req.body.id;
+
+      const dbTask = await Task.findByPk(taskId);
+
+      if (dbTask) {
+        //Como excluir o cache???
+
+        dbTask.destroy();
+      } else {
+        return res.status(404).json({ message: "Task not found." });
+      }
+
+      return res.status(200);
+    } catch (error) {
+      console.log("Internal server error:", error.message);
+      return res.status(500).json({ message: "Internal server error." });
+    }
+  },
 };
