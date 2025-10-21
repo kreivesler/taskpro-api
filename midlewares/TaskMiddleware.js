@@ -67,7 +67,7 @@ module.exports = taskMiddleware = {
   },
   verifyTaskExistById: async (req, res, next) => {
     try {
-      const id = req.params.id;
+      const id = req.params.id || req.body.id;
       const taskIdIsValid = isNaN(id);
 
       if (!taskIdIsValid) {
