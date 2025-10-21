@@ -22,7 +22,7 @@ module.exports = taskController = {
   },
   updateStatus: async (req, res) => {
     try {
-      const id = req.body.taskId;
+      const id = req.body.id;
       const dbTask = await Task.findByPk(id);
       if (!dbTask) {
         return res.status(404).json({ message: "Task not found." });
