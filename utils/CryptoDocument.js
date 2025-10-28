@@ -1,9 +1,9 @@
 const crypto = require("crypto");
-
 const algorithm = "aes-256-cbc";
-const key = process.env.CRYPTO_KEY;
+const key = toString(process.env.CRYPTO_KEY);
 //Use first 16 character from key
-const iv = Buffer.from(key.slice(0, 16));
+const keyString = key.slice(0, 16);
+const iv = Buffer.from(keyString);
 
 //Encrypt text function
 async function encrypt(text) {
