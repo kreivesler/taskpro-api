@@ -1,12 +1,16 @@
 const { Sequelize } = require("sequelize");
-const sequelize = new Sequelize({
-  database: process.env.DBNAME,
-  host: process.env.HOST,
-  username: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  port: process.env.DBPORT,
-  dialect: "mysql",
-});
+let dbName, host, dbUser, dbPassword, dbPort, dbDialect;
+
+dbName = toString(process.env.DBNAME);
+host = toString(process.env.HOST);
+dbUser = toString(process.env.DBUSER);
+dbPassword = toString(process.env.DBPASSWORD);
+dbPort = toString(process.env.DBPORT);
+dbDialect = toString(process.env.DBDIALECT);
+
+const connectionUri = `${dbDialect}://${dbUser}:${dbPassword}@${host}:${dbPort}/${dbName}`;
+
+const sequelize = new Sequelize(connectionUri);
 
 async function connectToDatabase() {
   try {
