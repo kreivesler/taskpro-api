@@ -7,10 +7,7 @@ module.exports = taskMiddleware = {
     try {
       const { user_id, title, description, date, client_id } = req.body;
 
-      const userId = isNaN(user_id);
-      const clientId = isNaN(client_id);
-
-      if (![userId, clientId].every(Boolean)) {
+      if (isNuN(user_id) || isNaN(client_id)) {
         return res
           .status(400)
           .json({ message: "Client ID or user ID not a number." });
@@ -41,15 +38,14 @@ module.exports = taskMiddleware = {
       const id = req.body.id;
       const newStatusTask = req.body.status;
       const statusBase = ["pending", "confirmed", "canceled"];
-      const taskIdIsValid = isNaN(id);
 
-      if (!taskIdIsValid) {
+      if (isNaN(id)) {
         return res.status(400).json({ message: "This ID is invalid." });
       }
 
       const taskExists = await redisClient.get(`task${id}`);
 
-      if (taskExists.length <= 0) {
+      if (!taskExists) {
         return res.status(400).json({ message: "The task not found." });
       }
 
@@ -68,15 +64,14 @@ module.exports = taskMiddleware = {
   verifyTaskExistById: async (req, res, next) => {
     try {
       const id = req.params.id || req.body.id;
-      const taskIdIsValid = isNaN(id);
 
-      if (!taskIdIsValid) {
+      if (isNaN(id)) {
         return res.status(400).json({ message: "This ID is invalid." });
       }
 
       const taskExists = await redisClient.get(`task${id}`);
 
-      if (taskExists.length <= 0) {
+      if (!taskExists) {
         return res.status(400).json({ message: "The task not found." });
       }
 
