@@ -1,14 +1,16 @@
 const { Sequelize } = require("sequelize");
 let dbName, host, dbUser, dbPassword, dbPort, dbDialect;
 
-dbName = toString(process.env.DBNAME);
-host = toString(process.env.HOST);
-dbUser = toString(process.env.DBUSER);
-dbPassword = toString(process.env.DBPASSWORD);
-dbPort = toString(process.env.DBPORT);
-dbDialect = toString(process.env.DBDIALECT);
+dbName = process.env.DBNAME;
+host = process.env.HOST;
+dbUser = process.env.DBUSER;
+dbPassword = process.env.DBPASSWORD;
+dbPort = process.env.DBPORT;
+dbDialect = process.env.DBDIALECT;
 
 const connectionUri = `${dbDialect}://${dbUser}:${dbPassword}@${host}:${dbPort}/${dbName}`;
+
+console.log("Uri DB:", connectionUri);
 
 const sequelize = new Sequelize(connectionUri);
 
